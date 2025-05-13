@@ -165,6 +165,10 @@ Start the frontend by
 cd frontend
 ```
 then 
+```bash
+npm install
+```
+then 
 
 ```bash
 npm start 

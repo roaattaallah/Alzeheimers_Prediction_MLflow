@@ -53,12 +53,18 @@ mlflow ui --backend-store-uri sqlite:///mlflow_db/mlflow.db
 ```
 Access the UI at `http://localhost:5000`
 
-## Before starting you should clone the repository 
+## Before starting you should clone the repository and install the neccessary dependancies:
 
 ```bash
 git clone git@github.com:roaattaallah/Alzeheimers_Prediction_MLflow.git
 
 ```
+then 
+```bash
+pip install -r requirements.txt
+```
+
+
 
 ### 1. Data Preprocessing
 Run the preprocessing script to prepare the data for model training:

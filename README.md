@@ -41,13 +41,20 @@ MLFlow_Project/
 └── train.py                  # Training  models script
 
 
+```
 
-## Project Flow
+This project uses MLflow to register and track different experiments.
 
-### 1. Data Preparation
-Place your raw data in the `data/raw/` directory. The data should be in a format compatible with the preprocessing script.
+## MLflow UI
+View experiment results and model registry:
 
-### 2. Data Preprocessing
+```bash
+mlflow ui --backend-store-uri sqlite:///mlflow_db/mlflow.db
+```
+Access the UI at `http://localhost:5000`
+
+
+### 1. Data Preprocessing
 Run the preprocessing script to prepare the data for model training:
 
 ```bash
@@ -118,10 +125,7 @@ python mlflow_serve.py --action start
 ```
 
 Available actions:
-- start: Start all model servers
-- stop: Stop all model servers
-- restart: Restart all model servers
-- status: Check server status
+- start: Start all model servers in different ports
 
 ### 8. Model Monitoring
 Monitor model performance in production:
@@ -135,45 +139,27 @@ Options:
 - Monitor specific model: `python monitor.py --model_name [model_name]`
 - Simulate drift: `python monitor.py --simulate_drift`
 
-### 9. API Usage
-The project provides a REST API for making predictions. Start the API server:
 
+
+### Running the frontend to test the models 
+The project provides a REST API for making predictions and a frontend built specifically to test all different models with the wanted parameters. In order to run the frontend successfully the following has to be done:  
+
+Start the API server
 ```bash
 python api.py
 ```
-
-Available endpoints:
-- `/api/predict`: Make predictions using individual models
-- `/api/predict-ensemble`: Make predictions using the ensemble
-- `/api/high-accuracy-ensemble`: Make predictions using the high-accuracy ensemble
-- `/api/direct-ensemble`: Make predictions using the direct ensemble
-
-## MLflow UI
-View experiment results and model registry:
+Start the frontend by 
+```bash
+cd frontend
+```
+then 
 
 ```bash
-mlflow ui --backend-store-uri sqlite:///mlflow_db/mlflow.db
+npm start 
 ```
 
-Access the UI at `http://localhost:5000`
+This makes the forntend accessible using the URI : http://localhost:3000  
 
-## Output Directories
-
-### Models
-- `models/trained_models/`: Base trained models
-- `models/tuned_models/`: Models after hyperparameter tuning
-- `models/ensembles/`: Ensemble models
-- `models/compared_models/`: Best performing models
-
-### Reports
-- `reports/figures/`: Generated visualizations
-- `reports/preprocessing/`: Preprocessing reports
-- `reports/model_comparison/`: Model comparison reports
-
-### Monitoring
-- `monitoring/plots/`: Performance monitoring visualizations
-- `monitoring/logs/`: Monitoring logs
-- `monitoring/summary/`: Monitoring summaries
 
 ## Notes
 - All models and experiments are tracked in MLflow
@@ -182,8 +168,3 @@ Access the UI at `http://localhost:5000`
 - Model servers run on different ports (5011-5017)
 - The API server runs on port 5000 by default
 
-## Troubleshooting
-- If model servers fail to start, check the log files in the project root
-- For MLflow issues, verify the SQLite database in `mlflow_db/`
-- For API issues, check the Flask server logs
-- For monitoring issues, check the logs in `monitoring/logs/` 

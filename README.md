@@ -7,29 +7,40 @@ This project implements a machine learning pipeline for predicting Alzheimer's d
 ```
 MLFlow_Project/
 ├── data/
-│   ├── raw/           # Original data
-│   └── processed/     # Preprocessed data
+│   ├── Monitoring/           # Monitoring data (Synthetic)
+│   └── processed/            # Preprocessed data
+    └── data/alzheimers_disease_data.csv  # Original data (raw)
+│      
 ├── models/
-│   ├── trained_models/    # Base trained models
-│   ├── tuned_models/      # Models after hyperparameter tuning
-│   ├── ensembles/         # Ensemble models
-│   └── compared_models/   # Best performing models
-├── monitoring/        # Model monitoring data and visualizations
-├── reports/          # Generated reports and visualizations
-├── mlruns/           # MLflow experiment tracking
-└── mlflow_db/        # MLflow SQLite database
-```
+│   ├── trained_models/       # Base trained models
+│   │   ├── logistic_model.pkl
+│   │   ├── rf_model.pkl
+│   │   └── .....    
+│   ├── tuned_models/         # Hyperparameter-tuned models
+│   │   ├── logistic_best_params.json
+│   │   ├── rf_best_params.json
+│   │   └── ...
+│   └── compared_models/      # Best model after comparison
+│       ├── best_model.pkl    # The selected best model
+│       └── best_model_info.json # Information about the best model
+├── mlruns/                   # MLflow tracking directory
+├── mlflow_db/                # MLflow database
+│   └── mlflow.db             # SQLite database 
+├── reports/
+│   └── figures/              # Visualizations
+│       ├── model_comparison.png
+│       ├── feature_coefficients.png
+│       └── ...
+├── api.py                    # Flask API 
+├── compare_models.py         # comparing all model performance
+├── hyperparameter_tuning.py  # hyperparameter optimization
+├── high_accuracy_ensemble.py # creating an ensemble model
+├── mlflow_config.py          # MLflow configuration
+├── mlflow_serve.py           # Serving the models via MLflow
+├── requirements.txt          # Project dependencies
+└── train.py                  # Training  models script
 
-## Prerequisites
 
-- Python 3.8+
-- Required packages (install using `pip install -r requirements.txt`):
-  - MLflow
-  - Scikit-learn
-  - XGBoost
-  - TensorFlow
-  - Flask
-  - Other dependencies listed in requirements.txt
 
 ## Project Flow
 

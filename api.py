@@ -16,6 +16,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 def load_preprocessing_pipeline():
+    """Load preprocessing pipeline for input data transformation"""
     pipeline_path = os.path.join("data", "processed", "preprocessing_pipeline.pkl")
     
     if os.path.exists(pipeline_path):
@@ -24,6 +25,7 @@ def load_preprocessing_pipeline():
         return None
 
 def load_feature_names():
+    """Load feature names used by the models"""
     feature_names_path = os.path.join("data", "processed", "feature_names.csv")
     if os.path.exists(feature_names_path):
         return pd.read_csv(feature_names_path)["0"].tolist()
@@ -32,6 +34,7 @@ def load_feature_names():
 preprocessing_pipeline = load_preprocessing_pipeline()
 feature_names = load_feature_names()
 
+# Information about available models and their endpoints
 MODEL_INFO = {
     "rf": {
         "name": "alzheimers_rf_tuned",
@@ -100,6 +103,7 @@ MODEL_INFO = {
 
 @app.route('/', methods=['GET'])
 def index():
+    """API root endpoint showing available endpoints"""
     return jsonify({
         "message": "Alzheimer's Disease Prediction API",
         "available_endpoints": [
@@ -114,6 +118,7 @@ def index():
 
 @app.route('/api/models', methods=['GET'])
 def get_models():
+    """Return information about available models"""
     try:
         return jsonify(MODEL_INFO)
     except Exception as e:
@@ -121,6 +126,7 @@ def get_models():
 
 @app.route('/api/features', methods=['GET'])
 def get_features():
+    """Return information about model features"""
     try:
         feature_info = {feature: {"description": f"{feature} parameter"} for feature in feature_names}
         return jsonify(feature_info)
@@ -128,6 +134,7 @@ def get_features():
         return jsonify({"error": str(e)}), 500
 
 def check_model_server(port, max_retries=3):
+    """Check if model server is running on specified port"""
     for attempt in range(max_retries):
         try:
             health_response = requests.get(f"http://localhost:{port}/health", timeout=2)
@@ -144,6 +151,7 @@ def check_model_server(port, max_retries=3):
 
 @app.route('/api/predict', methods=['POST'])
 def predict():
+    """Make prediction using a single model"""
     try:
         data = request.json
         model_name = data.get('model_name')
@@ -163,6 +171,7 @@ def predict():
                 "details": "Please ensure that the MLflow model servers are running by executing 'python mlflow_serve.py' first"
             }), 503
         
+        # Prepare input data
         df = pd.DataFrame({key: [value] for key, value in parameters.items()})
         
         if feature_names:
@@ -171,6 +180,7 @@ def predict():
                     df[feature] = 0
             df = df[feature_names]
         
+        # Apply preprocessing if available
         if preprocessing_pipeline:
             input_array = df.values
             preprocessed_data = preprocessing_pipeline.transform(input_array)
@@ -188,6 +198,7 @@ def predict():
             }
         }
         
+        # Retry logic for model server requests
         max_retries = 3
         for attempt in range(max_retries):
             try:
@@ -219,6 +230,7 @@ def predict():
         result = response.json()
         processed_result = {}
         
+        # Process prediction results
         if isinstance(result, list):
             prediction_value = result[0]
             processed_result['raw_prediction'] = prediction_value
@@ -247,6 +259,7 @@ def predict():
                 processed_result['probability'] = float(probability)
                 processed_result['prediction'] = "Positive" if probability >= 0.5 else "Negative"
         
+        # Add risk level based on probability
         if 'probability' in processed_result:
             prob = processed_result['probability']
             if prob < 0.3:
@@ -274,6 +287,7 @@ def predict():
 
 @app.route('/api/predict-ensemble', methods=['POST'])
 def predict_ensemble():
+    """Make prediction using voting ensemble of all available models"""
     try:
         data = request.json
         parameters = data.get('parameters')
@@ -281,6 +295,7 @@ def predict_ensemble():
         if not parameters:
             return jsonify({"error": "Missing parameters"}), 400
         
+        # Prepare input data
         df = pd.DataFrame({key: [value] for key, value in parameters.items()})
         
         if feature_names:
@@ -289,6 +304,7 @@ def predict_ensemble():
                     df[feature] = 0
             df = df[feature_names]
         
+        # Apply preprocessing if available
         if preprocessing_pipeline:
             input_array = df.values
             preprocessed_data = preprocessing_pipeline.transform(input_array)
@@ -305,6 +321,7 @@ def predict_ensemble():
         probabilities = []
         model_results = []
         
+        # Collect predictions from all available models
         for model_name in ensemble_models:
             if model_name not in MODEL_INFO:
                 continue
@@ -369,6 +386,7 @@ def predict_ensemble():
         if not predictions:
             return jsonify({"error": "No models were able to make predictions"}), 500
         
+        # Calculate ensemble prediction by voting
         positive_count = sum(predictions)
         total_count = len(predictions)
         positive_ratio = positive_count / total_count
@@ -379,9 +397,11 @@ def predict_ensemble():
         if not is_positive:
             displayed_positive_count = total_count - positive_count
         
+        # Calculate consensus probability
         aligned_probs = [prob for pred, prob in zip(predictions, probabilities) if pred == int(is_positive)]
         consensus_probability = sum(aligned_probs) / len(aligned_probs) if aligned_probs else positive_ratio
         
+        # Calculate weighted probability based on model accuracy
         weighted_probs = []
         weight_sum = 0
         
@@ -419,6 +439,7 @@ def predict_ensemble():
 
 @app.route('/api/high-accuracy-ensemble', methods=['POST'])
 def predict_high_accuracy_ensemble():
+    """Make prediction using the high-accuracy ensemble model"""
     try:
         data = request.json
         parameters = data.get('parameters')
@@ -426,6 +447,7 @@ def predict_high_accuracy_ensemble():
         if not parameters:
             return jsonify({"error": "Missing parameters"}), 400
         
+        # Prepare input data
         df = pd.DataFrame({key: [value] for key, value in parameters.items()})
         
         if feature_names:
@@ -434,6 +456,7 @@ def predict_high_accuracy_ensemble():
                     df[feature] = 0
             df = df[feature_names]
         
+        # Apply preprocessing if available
         if preprocessing_pipeline:
             input_array = df.values
             preprocessed_data = preprocessing_pipeline.transform(input_array)
@@ -459,6 +482,7 @@ def predict_high_accuracy_ensemble():
             }
         }
         
+        # Retry logic for model server requests
         max_retries = 3
         for attempt in range(max_retries):
             try:
@@ -490,6 +514,7 @@ def predict_high_accuracy_ensemble():
         result = response.json()
         processed_result = {}
         
+        # Process prediction results
         if isinstance(result, list):
             prediction_value = int(result[0])
             processed_result['prediction_type'] = 'binary'
@@ -522,6 +547,7 @@ def predict_high_accuracy_ensemble():
 
 @app.route('/api/test-ensemble', methods=['POST'])
 def test_ensemble():
+    """Test endpoint for ensemble model"""
     try:
         data = request.json
         parameters = data.get('parameters', {})
@@ -570,6 +596,7 @@ def test_ensemble():
 
 @app.route('/api/direct-ensemble', methods=['POST'])
 def direct_ensemble():
+    """Make prediction using a direct weighted ensemble of models"""
     try:
         data = request.json
         parameters = data.get('parameters', {})
@@ -587,6 +614,7 @@ def direct_ensemble():
             preprocessed_data = preprocessing_pipeline.transform(input_array)
             df = pd.DataFrame(preprocessed_data, columns=feature_names)
         
+        # Models to use in ensemble with their weights
         models_to_use = [
             {"key": "xgboost", "name": "alzheimers_xgboost_tuned", "version": "9", "weight": 0.14637536443985882},
             {"key": "rf", "name": "alzheimers_rf_tuned", "version": "9", "weight": 0.08878114635938472},
@@ -603,6 +631,7 @@ def direct_ensemble():
         total_weight = 0.0
         model_results = []
         
+        # Collect predictions from all models
         for model_info in models_to_use:
             model_key = model_info["key"]
             model_name = model_info["name"]
@@ -660,6 +689,7 @@ def direct_ensemble():
         if total_weight == 0:
             return jsonify({"error": "No models were available for prediction"}), 500
         
+        # Calculate final weighted probability
         final_prob = ensemble_probs / total_weight
         prediction = 1 if final_prob >= 0.5 else 0
         

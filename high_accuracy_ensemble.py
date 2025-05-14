@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 setup_mlflow()
 
+# Models to include in the ensemble with their versions and types
 MODELS = [
     {"name": "alzheimers_rf_tuned", "version": "9", "type": "sklearn"},
     {"name": "alzheimers_xgboost_tuned", "version": "9", "type": "sklearn"},
@@ -31,6 +32,7 @@ MODELS = [
 ]
 
 def parse_args():
+    """Parse command line arguments for ensemble creation"""
     parser = argparse.ArgumentParser(description="Create high-accuracy ensemble for Alzheimer's prediction")
     parser.add_argument(
         "--data_path",
@@ -41,6 +43,7 @@ def parse_args():
     return parser.parse_args()
 
 def load_test_data(data_path):
+    """Load test data from specified path"""
     try:
         X_test = np.load(os.path.join(data_path, 'X_test.npy'))
         y_test = np.load(os.path.join(data_path, 'y_test.npy'))
@@ -50,6 +53,7 @@ def load_test_data(data_path):
         raise
 
 def load_model(model_info):
+    """Load a model from MLflow registry using model info"""
     model_name = model_info["name"]
     model_version = model_info["version"]
     model_type = model_info["type"]
@@ -69,6 +73,7 @@ def load_model(model_info):
         return None, model_uri
 
 def get_model_predictions(model, X_test):
+    """Get predictions and probabilities from a model"""
     try:
         if hasattr(model, "predict_proba"):
             y_pred = model.predict(X_test)
@@ -97,6 +102,7 @@ def get_model_predictions(model, X_test):
         return None, None
 
 def find_optimal_threshold(y_test, y_prob):
+    """Find optimal classification threshold using Youden's J statistic"""
     fpr, tpr, thresholds = roc_curve(y_test, y_prob)
     
     j_scores = tpr - fpr
@@ -114,6 +120,7 @@ def find_optimal_threshold(y_test, y_prob):
     }
 
 def calculate_metrics(y_test, y_pred, y_prob):
+    """Calculate performance metrics for model evaluation"""
     tn, fp, fn, tp = confusion_matrix(y_test, y_pred).ravel()
     
     sensitivity = tp / (tp + fn) if (tp + fn) > 0 else 0
@@ -138,23 +145,28 @@ def calculate_metrics(y_test, y_pred, y_prob):
     }
 
 def create_weighted_ensemble(y_test, y_pred_list, y_prob_list, model_names):
+    """Create weighted ensemble from multiple models based on performance"""
     individual_metrics = []
     for i, (y_pred, y_prob) in enumerate(zip(y_pred_list, y_prob_list)):
         model_metrics = calculate_metrics(y_test, y_pred, y_prob)
         individual_metrics.append((i, model_metrics["accuracy"], model_metrics["auc"]))
     
+    # Sort models by accuracy
     individual_metrics.sort(key=lambda x: x[1], reverse=True)
     
+    # Assign weights based on rank (higher ranked models get higher weights)
     weights = np.zeros(len(y_prob_list))
     for rank, (idx, _, _) in enumerate(individual_metrics):
         weights[idx] = np.exp(-0.5 * rank)
     
     weights = weights / np.sum(weights)
     
+    # Create weighted ensemble predictions
     ensemble_probs = np.zeros(len(y_test))
     for i, y_prob in enumerate(y_prob_list):
         ensemble_probs += weights[i] * y_prob
     
+    # Find optimal threshold for ensemble
     optimal_results = find_optimal_threshold(y_test, ensemble_probs)
     optimal_threshold = optimal_results["threshold"]
     
@@ -165,6 +177,7 @@ def create_weighted_ensemble(y_test, y_pred_list, y_prob_list, model_names):
     return weights, ensemble_preds, ensemble_probs, metrics
 
 class WeightedEnsembleModel(mlflow.pyfunc.PythonModel):
+    """MLflow Python model for weighted ensemble prediction"""
     def load_context(self, context):
         import json, numpy as np, mlflow.pyfunc
         with open(context.artifacts["ensemble_config"], "r") as f:
@@ -176,6 +189,7 @@ class WeightedEnsembleModel(mlflow.pyfunc.PythonModel):
         self.base_models = [mlflow.pyfunc.load_model(uri) for uri in self.model_uris]
 
     def predict(self, context, model_input):
+        """Generate predictions using weighted ensemble of models"""
         import numpy as np
         X = model_input.values
         ensemble_probs = np.zeros(X.shape[0])
@@ -185,6 +199,7 @@ class WeightedEnsembleModel(mlflow.pyfunc.PythonModel):
         return (ensemble_probs >= self.threshold).astype(int)
 
 def log_to_mlflow(weights, preds, probs, model_names, model_uris, metrics, output_dir):
+    """Log ensemble model and metrics to MLflow"""
     experiment_name = "weighted_ensemble"
     mlflow.set_experiment(experiment_name)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")

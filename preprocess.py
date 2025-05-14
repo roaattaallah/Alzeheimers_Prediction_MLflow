@@ -18,6 +18,7 @@ from collections import Counter
 DEFAULT_RANDOM_SEED = 42
 
 def set_random_seeds(seed=DEFAULT_RANDOM_SEED):
+    """Set random seeds for reproducibility"""
     random.seed(seed)
     np.random.seed(seed)
     os.environ['PYTHONHASHSEED'] = str(seed)
@@ -26,6 +27,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 logger = logging.getLogger(__name__)
 
 def parse_args():
+    """Parse command line arguments for data preprocessing"""
     parser = argparse.ArgumentParser(description="Data preprocessing script")
     parser.add_argument("--test_size", type=float, default=0.2, 
                         help="Test size for train-test split (default: 0.2)")
@@ -36,9 +38,11 @@ def parse_args():
     return parser.parse_args()
 
 def create_visualizations(data, y, output_dir="reports/figures/preprocessing"):
+    """Generate and save visualizations for exploratory data analysis"""
     os.makedirs(output_dir, exist_ok=True)
     visualization_paths = {}
     
+    # Class distribution plot
     plt.figure(figsize=(10, 6))
     ax = sns.countplot(x=y, palette=['#4472C4', '#ED7D31'])
     plt.title('Target Class Distribution', fontsize=14, fontweight='bold')
@@ -63,6 +67,7 @@ def create_visualizations(data, y, output_dir="reports/figures/preprocessing"):
     plt.close()
     visualization_paths['class_distribution'] = class_dist_path
     
+    # Correlation heatmap
     plt.figure(figsize=(12, 10))
     correlation = data.corr()
     mask = np.triu(correlation)
@@ -78,7 +83,7 @@ def create_visualizations(data, y, output_dir="reports/figures/preprocessing"):
     plt.close()
     visualization_paths['correlation_heatmap'] = corr_path
     
-    # feature relevance histogram
+    # Feature relevance plot
     full_data = data.copy()
     full_data['Diagnosis'] = y
     feature_corrs = abs(full_data.corr()['Diagnosis']).sort_values(ascending=False)
@@ -105,7 +110,7 @@ def create_visualizations(data, y, output_dir="reports/figures/preprocessing"):
     plt.close()
     visualization_paths['feature_distributions'] = feat_relevance_path
     
-    # top 9 features
+    # Top features distribution by diagnosis
     target_correlations = abs(full_data.corr()['Diagnosis']).sort_values(ascending=False)
     top_features = target_correlations[1:10].index.tolist()
     
@@ -150,6 +155,7 @@ def create_visualizations(data, y, output_dir="reports/figures/preprocessing"):
     return visualization_paths
 
 def create_imbalance_visualization(original_y, resampled_y, output_dir="reports/figures/preprocessing"):
+    """Create visualization comparing class distribution before and after resampling"""
     os.makedirs(output_dir, exist_ok=True)
     
     original_counter = Counter(original_y)
@@ -183,7 +189,7 @@ def create_imbalance_visualization(original_y, resampled_y, output_dir="reports/
     return resampling_viz_path
 
 def handle_class_imbalance(X, y, sampling_ratio=0.8, random_state=DEFAULT_RANDOM_SEED):
-   
+    """Apply SMOTE to handle class imbalance in the training data"""
     counter = Counter(y)
     logger.info(f"Original class distribution: {counter}")
     
@@ -195,6 +201,7 @@ def handle_class_imbalance(X, y, sampling_ratio=0.8, random_state=DEFAULT_RANDOM
     return X_resampled, y_resampled
 
 def preprocess_data(test_size, random_state, smote_ratio=0.8):
+    """Main preprocessing function that loads, transforms and saves the data"""
     set_random_seeds(random_state)
     
     data_path = os.path.join("data", "alzheimers_disease_data.csv")
@@ -206,37 +213,44 @@ def preprocess_data(test_size, random_state, smote_ratio=0.8):
     missing_values = data.isnull().sum()
     logger.info(f"Missing values per column:\n{missing_values}")
     
+    # Remove non-feature columns
     data = data.drop(['PatientID', 'DoctorInCharge'], axis=1)
     
+    # Convert integer columns to float
     int_columns = data.select_dtypes(include=['int']).columns
     for col in int_columns:
         data[col] = data[col].astype('float64')
     logger.info(f"Converted {len(int_columns)} integer columns to float64")
     
+    # Split features and target
     X = data.drop('Diagnosis', axis=1)
     y = data['Diagnosis']
     logger.info(f"Target class distribution:\n{y.value_counts()}")
     
+    # Generate visualizations
     logger.info("Generating data visualizations...")
     figures_dir = os.path.join("reports", "figures", "preprocessing")
     os.makedirs(figures_dir, exist_ok=True)
     visualization_paths = create_visualizations(X, y, figures_dir)
     
+    # Split data into training and testing sets
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=test_size, random_state=random_state, stratify=y
     )
     logger.info(f"Initial training set shape: {X_train.shape}, Testing set shape: {X_test.shape}")
     
+    # Create preprocessing pipeline
     preprocessing_pipeline = Pipeline([
         ('min_max_scaler', MinMaxScaler()),
         ('standard_scaler', StandardScaler())
     ])
     
+    # Apply preprocessing
     X_train_scaled = preprocessing_pipeline.fit_transform(X_train)
     X_test_scaled = preprocessing_pipeline.transform(X_test)
     logger.info("Applied MinMaxScaler and StandardScaler for preprocessing")
     
-    # SMOTE 
+    # Apply SMOTE for class balancing
     logger.info("Applying SMOTE for class balancing")
     X_train_resampled, y_train_resampled = handle_class_imbalance(
         X_train_scaled, y_train, 
@@ -244,10 +258,10 @@ def preprocess_data(test_size, random_state, smote_ratio=0.8):
         random_state=random_state
     )
     
-    #  visualization of class balance before/after
+    # Create visualization of class balance before/after
     imbalance_viz_path = create_imbalance_visualization(y_train, y_train_resampled, figures_dir)
     
-
+    # Save processed data
     processed_dir = os.path.join("data", "processed")
     os.makedirs(processed_dir, exist_ok=True)
     
@@ -257,10 +271,12 @@ def preprocess_data(test_size, random_state, smote_ratio=0.8):
     np.save(os.path.join(processed_dir, 'y_test.npy'), y_test.values)
     pd.Series(X_train.columns).to_csv(os.path.join(processed_dir, 'feature_names.csv'), index=False)
     
+    # Save preprocessing pipeline
     import joblib
     joblib.dump(preprocessing_pipeline, os.path.join(processed_dir, 'preprocessing_pipeline.pkl'))
     logger.info("Data preprocessing completed successfully.")
     
+    # Log to MLflow
     experiment_name = "preprocessing"
     mlflow.set_experiment(experiment_name)
     logger.info(f"MLflow experiment set to: {experiment_name}")
@@ -291,7 +307,7 @@ def preprocess_data(test_size, random_state, smote_ratio=0.8):
             mlflow.log_artifact(vis_path)
             logger.info(f"Logged visualization: {os.path.basename(vis_path)}")
         
-        # imbalance visualization
+        # Log imbalance visualization
         mlflow.log_artifact(imbalance_viz_path)
         logger.info(f"Logged imbalance visualization: {os.path.basename(imbalance_viz_path)}")
         
@@ -304,6 +320,7 @@ def preprocess_data(test_size, random_state, smote_ratio=0.8):
         logger.info(f"MLflow experiment URL: {mlflow_url}")
 
 def main():
+    """Main function to run the preprocessing pipeline"""
     setup_mlflow()
     
     args = parse_args()

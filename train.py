@@ -21,6 +21,7 @@ warnings.filterwarnings('ignore')
 
 from mlflow_config import setup_mlflow
 
+# Set random seed for reproducibility
 RANDOM_SEED = 42
 random.seed(RANDOM_SEED)
 np.random.seed(RANDOM_SEED)
@@ -76,19 +77,19 @@ def parse_args():
     return parser.parse_args()
 
 def ensure_directory_exists(directory):
-    
+    # Create directory if it doesn't exist
     if not os.path.exists(directory):
         os.makedirs(directory, exist_ok=True)
         logger.info(f"Created directory: {directory}")
 
 def remove_existing_file(file_path):
-    
+    # Remove file if it exists
     if os.path.exists(file_path):
         os.remove(file_path)
         logger.info(f"Removed existing file: {file_path}")
 
 def load_data():
-    
+    # Load preprocessed training and testing data
     processed_dir = os.path.join("data", "processed")
     X_train = np.load(os.path.join(processed_dir, 'X_train.npy'))
     X_test = np.load(os.path.join(processed_dir, 'X_test.npy'))
@@ -100,7 +101,7 @@ def load_data():
     return X_train, X_test, y_train, y_test, feature_names
 
 def train_logistic_regression(X_train, y_train, alpha, l1_ratio):
-   
+    # Train a logistic regression model with elasticnet penalty
     logger.info(f"Training Logistic Regression with alpha={alpha}, l1_ratio={l1_ratio}")
     
     model = LogisticRegression(
@@ -117,7 +118,7 @@ def train_logistic_regression(X_train, y_train, alpha, l1_ratio):
     return model
 
 def train_random_forest(X_train, y_train):
-    
+    # Train a random forest classifier
     logger.info("Training Random Forest Classifier")
     
     model = RandomForestClassifier(
@@ -132,7 +133,7 @@ def train_random_forest(X_train, y_train):
     return model
 
 def train_knn(X_train, y_train):
-
+    # Train a k-nearest neighbors classifier
     logger.info("Training K-Nearest Neighbors Classifier")
     
     model = KNeighborsClassifier(
@@ -147,7 +148,7 @@ def train_knn(X_train, y_train):
     return model
 
 def train_svm(X_train, y_train):
-    
+    # Train a support vector machine classifier
     logger.info("Training Support Vector Machine Classifier")
     
     model = SVC(
@@ -162,7 +163,7 @@ def train_svm(X_train, y_train):
     return model
 
 def train_xgboost(X_train, y_train):
-    
+    # Train an XGBoost classifier
     if not XGBOOST_AVAILABLE:
         logger.error("XGBoost is not installed. Please install it with 'pip install xgboost'")
         raise ImportError("XGBoost is not installed")
@@ -181,12 +182,12 @@ def train_xgboost(X_train, y_train):
     return model
 
 def create_neural_network(input_dim, units=64, dropout_rate=0.2, learning_rate=0.001):
-    
+    # Create a simple neural network architecture for binary classification
     if not TENSORFLOW_AVAILABLE:
         logger.error("TensorFlow is not installed. Please install it to use neural networks.")
         return None
         
-    # i will import inside function to avoid errors when TensorFlow is not available
+    # Import inside function to avoid errors when TensorFlow is not available
     from tensorflow.keras.models import Sequential #type: ignore
     from tensorflow.keras.layers import Dense, Dropout #type: ignore
     
@@ -208,12 +209,12 @@ def create_neural_network(input_dim, units=64, dropout_rate=0.2, learning_rate=0
 
 def train_neural_network(X_train, y_train, input_dim=None, units=64, dropout_rate=0.2, learning_rate=0.001,
                           batch_size=32, epochs=50, validation_split=0.2):
-   
+    # Train a neural network with early stopping
     if not TENSORFLOW_AVAILABLE:
         logger.error("TensorFlow is not installed. Please install it to use neural networks.")
         return None
         
-    # iam importing  inside function to avoid errors when TensorFlow is not available
+    # Import inside function to avoid errors when TensorFlow is not available
     from tensorflow.keras.callbacks import EarlyStopping #type: ignore
     from scikeras.wrappers import KerasClassifier
     
@@ -250,7 +251,7 @@ def train_neural_network(X_train, y_train, input_dim=None, units=64, dropout_rat
     return model
 
 def evaluate_model(model, X_test, y_test, feature_names=None):
-    
+    # Evaluate model performance and generate visualizations
     # Make predictions
     if isinstance(model, tf.keras.Model):
         y_prob = model.predict(X_test)
@@ -281,20 +282,18 @@ def evaluate_model(model, X_test, y_test, feature_names=None):
     plt.tight_layout()
     
     if hasattr(model, 'feature_importances_') and feature_names is not None:
-        # feature importances
+        # Generate feature importance plot for tree-based models
         importances = model.feature_importances_
         
         indices = np.argsort(importances)[::-1]
         top_k = 15 
         
-        # Create feature importance plot 
         feat_fig = plt.figure(figsize=(10, 6))
         plt.title('Feature Importances')
         plt.bar(range(top_k), importances[indices][:top_k], align='center')
         plt.xticks(range(top_k), feature_names[indices][:top_k], rotation=90)
         plt.tight_layout()
         
-        # Save feature importance plot
         ensure_directory_exists("reports/figures")
         feat_imp_path = os.path.join("reports", "figures", "feature_importances.png")
         remove_existing_file(feat_imp_path)
@@ -302,6 +301,7 @@ def evaluate_model(model, X_test, y_test, feature_names=None):
         plt.close(feat_fig)
     
     elif hasattr(model, 'coef_') and feature_names is not None:
+        # Generate coefficient plot for linear models
         coef = model.coef_[0]
         
         indices = np.argsort(np.abs(coef))[::-1]
@@ -322,7 +322,7 @@ def evaluate_model(model, X_test, y_test, feature_names=None):
     return metrics, fig
 
 def load_best_params(model_type):
-    
+    # Load best hyperparameters from tuning results
     best_params_path = os.path.join("models", "tuned_models", f"{model_type}_best_params.json")
     
     if not os.path.exists(best_params_path):

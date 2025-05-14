@@ -19,6 +19,7 @@ import warnings
 warnings.filterwarnings('ignore')
 import matplotlib.pyplot as plt
 
+# Set random seeds for reproducibility
 RANDOM_SEED = 42
 random.seed(RANDOM_SEED)
 np.random.seed(RANDOM_SEED)
@@ -26,6 +27,7 @@ os.environ['PYTHONHASHSEED'] = str(RANDOM_SEED)
 
 setup_mlflow()
 
+# optional dependencies
 try:
     import xgboost as xgb
     XGBOOST_AVAILABLE = True
@@ -44,11 +46,13 @@ except ImportError:
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# Global variables for hyperopt
+# Global variables for hyperopt optimization
 X_train = None
 y_train = None
 
+# parse command line arguments
 def parse_args():
+    
     parser = argparse.ArgumentParser(description="Hyperparameter tuning script")
     parser.add_argument(
         "--model_type",
@@ -65,29 +69,34 @@ def parse_args():
     )
     return parser.parse_args()
 
+
+# ensure directory exists
 def ensure_directory_exists(directory):
     if not os.path.exists(directory):
         os.makedirs(directory, exist_ok=True)
         logger.info(f"Created directory: {directory}")
 
+# remove existing file
 def remove_existing_file(file_path):
     if os.path.exists(file_path):
         os.remove(file_path)
 
+# load data
 def load_data():
+   
     processed_dir = os.path.join("data", "processed")
     X_train = np.load(os.path.join(processed_dir, 'X_train.npy'))
     y_train = np.load(os.path.join(processed_dir, 'y_train.npy'))
     return X_train, y_train
 
+
+# evaluate final model
 def evaluate_final_model(model, X_test, y_test):
-  
+   
     if hasattr(model, 'predict') and not hasattr(model, 'predict_proba'):
-       
         y_prob = model.predict(X_test)
         y_pred = (y_prob > 0.5).astype(int)
     else:
-        
         y_pred = model.predict(X_test)
         y_prob = model.predict_proba(X_test)[:, 1]
     
@@ -100,8 +109,8 @@ def evaluate_final_model(model, X_test, y_test):
     }
     return metrics
 
+# log parameters and metrics
 def log_params_and_metrics(params, metric_value, model_type, run_name=None):
-    
     nested_run = mlflow.start_run(nested=True, run_name=run_name)
     try:
         for param_name, param_value in params.items():
@@ -112,7 +121,9 @@ def log_params_and_metrics(params, metric_value, model_type, run_name=None):
     finally:
         mlflow.end_run()
 
+# objective function for logistic regression
 def objective_logistic(params):
+    
     C = params['C']
     l1_ratio = params['l1_ratio']
     
@@ -139,7 +150,10 @@ def objective_logistic(params):
     
     return {'loss': -mean_auc, 'status': STATUS_OK, 'model': model}
 
+
+# objective function for random forest
 def objective_random_forest(params):
+   
     n_estimators = int(params['n_estimators'])
     max_depth = int(params['max_depth'])
     min_samples_split = int(params['min_samples_split'])
@@ -172,6 +186,8 @@ def objective_random_forest(params):
     
     return {'loss': -mean_auc, 'status': STATUS_OK, 'model': model}
 
+
+# objective function for k-nearest neighbors
 def objective_knn(params):
     n_neighbors = int(params['n_neighbors'])
     weights = params['weights']
@@ -203,6 +219,7 @@ def objective_knn(params):
     
     return {'loss': -mean_auc, 'status': STATUS_OK, 'model': model}
 
+# objective function for support vector machine
 def objective_svm(params):
     C = params['C']
     gamma = params['gamma']
@@ -223,6 +240,7 @@ def objective_svm(params):
     
     return {'loss': -mean_auc, 'status': STATUS_OK, 'model': model}
 
+# objective function for xgboost
 def objective_xgboost(params):
     if not XGBOOST_AVAILABLE:
         logger.error("XGBoost is not installed. Please install it with: pip install xgboost")
@@ -258,6 +276,7 @@ def objective_xgboost(params):
     
     return {'loss': -mean_auc, 'status': STATUS_OK, 'model': model}
 
+# create neural network
 def create_neural_network(input_dim, units=64, dropout_rate=0.2, learning_rate=0.001):
     model = Sequential()
     model.add(Dense(units, input_dim=input_dim, activation='relu'))
@@ -275,6 +294,7 @@ def create_neural_network(input_dim, units=64, dropout_rate=0.2, learning_rate=0
     
     return model
 
+# objective function for neural network
 def objective_neural_network(params):
     if not TENSORFLOW_AVAILABLE:
         logger.error("TensorFlow is not installed")
@@ -374,6 +394,7 @@ def objective_neural_network(params):
         mlflow.end_run()
         tf.keras.backend.clear_session()
 
+# save best hyperparameters
 def save_best_params(best_params, model_type):
     ensure_directory_exists("models")
     ensure_directory_exists(os.path.join("models", "tuned_models"))
@@ -448,8 +469,8 @@ def save_best_params(best_params, model_type):
     except Exception as e:
         logger.error(f"Error saving best parameters: {str(e)}")
 
+# get search space
 def get_search_space(model_type, max_evals):
-    """Get search space for a model type based on max_evals"""
     if max_evals == 1:
         if model_type == "logistic":
             return {
@@ -533,8 +554,13 @@ def get_search_space(model_type, max_evals):
     
     return {}
 
+# save model
 def save_model(model, model_type, X_train, y_train, feature_names):
-    """Save the model to disk and MLflow"""
+    """Save trained model to disk and MLflow:
+    - Handles both sklearn and tensorflow models
+    - Saves model artifacts and parameters
+    - Registers model in MLflow registry
+    """
     ensure_directory_exists("models")
     ensure_directory_exists(os.path.join("models", "tuned_models"))
     
@@ -585,7 +611,9 @@ def save_model(model, model_type, X_train, y_train, feature_names):
     return model_artifact_path
 
 def get_base_model_metrics(model_type):
-    """Get metrics from the base model stored in MLflow"""
+    """Retrieve metrics from base model in MLflow for comparison.
+    Returns default metrics if base model not found.
+    """
     client = mlflow.tracking.MlflowClient()
     
     base_model_name = f"alzheimers_{model_type}_model"
@@ -616,7 +644,7 @@ def get_base_model_metrics(model_type):
         return {"roc_auc": 0.0, "accuracy": 0.0, "precision": 0.0, "recall": 0.0, "f1": 0.0}
 
 def create_comparison_plot(base_metrics, tuned_metrics, model_type):
-    """Create a plot comparing all metrics between base and tuned models"""
+    """Create visualization comparing base and tuned model performance metrics"""
     plt.figure(figsize=(12, 8))
     
     metrics = ['accuracy', 'precision', 'recall', 'f1', 'roc_auc']
@@ -667,6 +695,13 @@ def create_comparison_plot(base_metrics, tuned_metrics, model_type):
     return output_path
 
 def main():
+    """Main function to run hyperparameter optimization process:
+    1. Load data
+    2. Define search space
+    3. Run optimization
+    4. Save best model and parameters
+    5. Create performance comparison
+    """
     args = parse_args()
  
     logger.info("Loading preprocessed data...")

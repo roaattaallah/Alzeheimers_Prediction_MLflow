@@ -11,7 +11,9 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 def start_model_server(model_name, model_version, port):
+    """Start MLflow model server for a specific model version on the given port"""
     try:
+        # Check if port is already in use
         check_port_cmd = f"lsof -i :{port} | grep LISTEN"
         result = subprocess.run(check_port_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         if result.returncode == 0:
@@ -20,15 +22,15 @@ def start_model_server(model_name, model_version, port):
             print(f"✅ Model {model_name} (v{model_version}) already running on port {port} (PID: {pid})")
             return True
         
-
+        # Start model server in background
         log_file = f"mlflow_model_{model_name}_{port}.log"
         cmd = f"nohup mlflow models serve -m models:/{model_name}/{model_version} -p {port} --host 0.0.0.0 --no-conda > {log_file} 2>&1 &"
         
         print(f"Starting model {model_name} (v{model_version}) on port {port}...")
         
-
         process = subprocess.run(cmd, shell=True)
         
+        # Wait for server to start, neural networks and ensembles need more time
         max_attempts = 10 if "nn_tuned" in model_name or "ensemble" in model_name else 5
         for i in range(max_attempts):
             time.sleep(3 * (i + 1))
@@ -52,7 +54,7 @@ def start_model_server(model_name, model_version, port):
                 
                 return True
         
-    
+        # Server failed to start
         logger.error(f"Failed to start model server for {model_name} on port {port}")
         
         try:
@@ -70,7 +72,7 @@ def start_model_server(model_name, model_version, port):
         return False
 
 def cleanup_old_logs():
-   
+    """Remove old model server log files"""
     try:
         log_files = [f for f in os.listdir('.') if f.startswith('mlflow_model_') and f.endswith('.log')]
         for log_file in log_files:
@@ -82,10 +84,10 @@ def cleanup_old_logs():
 def main():
     setup_mlflow()
     
-
+    # Clean up old log files
     cleanup_old_logs()
     
-
+    # Define models to serve
     tuned_models = [
         {"name": "alzheimers_xgboost_tuned", "version": "9", "port": 5011},
         {"name": "alzheimers_logistic_tuned", "version": "16", "port": 5012},
@@ -96,12 +98,12 @@ def main():
         {"name": "high_accuracy_ensemble", "version": "6", "port": 5017}
     ]
     
-
+    # Start all model servers
     print("Starting model servers...")
     for model in tuned_models:
         start_model_server(model["name"], model["version"], model["port"])
     
-
+    # Display summary of deployed models
     print("\n===== DEPLOYED MODELS =====")
     for model in tuned_models:
         print(f"{model['name']} - http://localhost:{model['port']}/invocations")

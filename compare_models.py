@@ -18,6 +18,7 @@ import seaborn as sns
 from mlflow_config import setup_mlflow
 
 
+# Set random seed for reproducibility
 RANDOM_SEED = 42
 random.seed(RANDOM_SEED)
 np.random.seed(RANDOM_SEED)
@@ -68,6 +69,7 @@ def direct_train_model(model_type):
     metrics_capture = CaptureMetrics()
     original_info = train_module.logger.info
     
+    # Override logger.info to capture metrics from output
     def new_info(message):
         original_info(message)
         if ": " in message:
@@ -83,6 +85,7 @@ def direct_train_model(model_type):
     
     train_module.logger.info = new_info
     
+    # Create mock args for train.py
     class Args:
         def __init__(self, model_type):
             self.model_type = model_type
@@ -126,6 +129,7 @@ def direct_tune_hyperparameters(model_type):
     metrics_capture = CaptureMetrics()
     original_info = tuning_module.logger.info
     
+    # Override logger.info to capture metrics from output
     def new_info(message):
         original_info(message)
         if "Best score: " in message:
@@ -143,6 +147,7 @@ def direct_tune_hyperparameters(model_type):
     
     tuning_module.logger.info = new_info
     
+    # Create mock args for hyperparameter_tuning.py
     class Args:
         def __init__(self, model_type):
             self.model_type = model_type
@@ -223,9 +228,11 @@ def train_and_save_best_model(best_model_type):
     logger.info(f"Training final model: {best_model_type}")
     
     try:
+        # Train the best model with its optimal parameters
         cmd = ["python", "train.py", "--model_type", best_model_type, "--use_best_params", "True"]
         subprocess.run(cmd, check=True)
         
+        # Save the best model to the compared_models directory
         os.makedirs(os.path.join("models", "compared_models"), exist_ok=True)
         best_model_path = os.path.join("models", "trained_models", f"{best_model_type}_model.pkl")
         best_model_dest = os.path.join("models", "compared_models", "best_model.pkl")
@@ -234,6 +241,7 @@ def train_and_save_best_model(best_model_type):
             os.remove(best_model_dest)
         shutil.copy2(best_model_path, best_model_dest)
         
+        # Save model metadata
         model_info = {
             "model_type": best_model_type,
             "hyperparameters": best_params,
@@ -246,6 +254,7 @@ def train_and_save_best_model(best_model_type):
         
         logger.info(f"Best model saved to {best_model_dest}")
         
+        # Log best model to MLflow
         run = None
         try:
             run = mlflow.start_run(run_name=f"best_model_{best_model_type}")
@@ -317,6 +326,7 @@ def generate_comparison_chart(base_results, tuned_results):
         best_model = models[0] if models else "logistic"
         return best_model
     
+    # Create comparison chart for base vs tuned models
     for model_name, base_metrics in sorted_results:
         base_accuracy = base_metrics.get('accuracy', 0)
         tuned_accuracy = tuned_results.get(model_name, {}).get('best_score', 0)
@@ -334,6 +344,7 @@ def generate_comparison_chart(base_results, tuned_results):
         best_base_model = sorted_results[0][0] if sorted_results else "logistic"
         return best_base_model
     
+    # Create comparison visualization
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 10), gridspec_kw={'height_ratios': [2, 1]})
     
     x = range(len(models))
@@ -361,6 +372,7 @@ def generate_comparison_chart(base_results, tuned_results):
     ax1.legend()
     ax1.grid(axis='y', linestyle='--', alpha=0.7)
     
+    # Plot improvement bars
     improvement_bars = ax2.bar(x, improvements, width=0.5, color='green', alpha=0.6)
     
     for bar in improvement_bars:
@@ -385,6 +397,7 @@ def generate_comparison_chart(base_results, tuned_results):
     plt.savefig(fig_path)
     plt.close()
     
+    # Return the best tuned model
     best_idx = tuned_scores.index(max(tuned_scores))
     best_model = models[best_idx]
     
@@ -414,13 +427,18 @@ def main():
     """Main function to run the comparison process."""
     logger.info("Starting model comparison process")
     
+    # Clean up model folders
     clear_model_folders()
+    
+    # Train base models
     logger.info("Training base models...")
     base_results = train_base_models()
     
+    # Tune hyperparameters
     logger.info("Running hyperparameter tuning...")
     tuned_results = tune_hyperparameters()
     
+    # Generate comparison chart and find best model
     logger.info("Generating comparison chart...")
     best_model_type = generate_comparison_chart(base_results, tuned_results)
     

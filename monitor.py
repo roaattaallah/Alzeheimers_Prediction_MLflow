@@ -20,6 +20,7 @@ setup_mlflow()
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
+# Models to be monitored with their versions
 MODELS_TO_MONITOR = [
     {"name": "alzheimers_rf_tuned", "version": "9"},
     {"name": "alzheimers_xgboost_tuned", "version": "9"},
@@ -32,6 +33,7 @@ MODELS_TO_MONITOR = [
 MONITORING_DATA_PATH = os.path.join("data", "monitoring")
 
 def parse_args():
+    """Parse command line arguments for model monitoring"""
     parser = argparse.ArgumentParser(description="Model monitoring script")
     parser.add_argument(
         "--model_name",
@@ -53,6 +55,7 @@ def parse_args():
     return parser.parse_args()
 
 def load_model_from_registry(model_name, model_version=None):
+    """Load model from MLflow registry with specified name and version"""
     client = MlflowClient()
     
     try:
@@ -91,6 +94,7 @@ def load_model_from_registry(model_name, model_version=None):
         return None, None
 
 def load_latest_test_data():
+    """Load the latest monitoring test data"""
     data_dir = MONITORING_DATA_PATH
     logger.info(f"Using monitoring data from {data_dir}")
     
@@ -121,6 +125,7 @@ def load_latest_test_data():
         raise
 
 def evaluate_model_performance(model, X_test, y_test):
+    """Evaluate model performance on test data and return metrics"""
     try:
         if hasattr(model, "predict_proba"):
             y_pred = model.predict(X_test)
@@ -169,6 +174,7 @@ def evaluate_model_performance(model, X_test, y_test):
         }, np.zeros(len(y_test)), np.zeros(len(y_test))
 
 def detect_performance_drift(metrics, threshold=0.05):
+    """Detect if model performance has drifted beyond the threshold"""
     history_file = os.path.join("monitoring", "performance_history.json")
     
     if os.path.exists(history_file):
@@ -189,6 +195,7 @@ def detect_performance_drift(metrics, threshold=0.05):
     return False
 
 def save_performance_metrics(metrics):
+    """Save model performance metrics to history file"""
     os.makedirs("monitoring", exist_ok=True)
     history_file = os.path.join("monitoring", "performance_history.json")
     
@@ -206,6 +213,7 @@ def save_performance_metrics(metrics):
     logger.info(f"Performance metrics saved to {history_file}")
 
 def generate_monitoring_plots(model, X_test, y_test, y_pred, y_prob, feature_names, output_dir):
+    """Generate monitoring plots for model performance visualization"""
     os.makedirs(output_dir, exist_ok=True)
     
     # Confusion Matrix
@@ -262,6 +270,7 @@ def generate_monitoring_plots(model, X_test, y_test, y_pred, y_prob, feature_nam
     logger.info(f"Monitoring plots saved to {output_dir}")
 
 def generate_data_batches(X_test, y_test, n_batches=10, batch_size=None):
+    """Generate random batches of test data for monitoring"""
     if batch_size is None:
         batch_size = len(X_test) // n_batches
     
@@ -277,7 +286,7 @@ def generate_data_batches(X_test, y_test, n_batches=10, batch_size=None):
     return batches
 
 def setup_monitoring_log():
-   
+    """Setup logging for drift alerts"""
     log_dir = "monitoring/logs"
     os.makedirs(log_dir, exist_ok=True)
     
@@ -293,6 +302,7 @@ def setup_monitoring_log():
     return log_file
 
 def plot_batch_performance(model_name, batch_metrics, output_dir):
+    """Plot performance metrics across batches to visualize drift"""
     plt.figure(figsize=(12, 6))
     
     batch_numbers = range(1, len(batch_metrics) + 1)
@@ -328,6 +338,7 @@ def plot_batch_performance(model_name, batch_metrics, output_dir):
     plt.close()
 
 def detect_batch_drift(batch_metrics, threshold=0.05):
+    """Detect if performance has drifted across recent batches"""
     auc_scores = [m['auc'] for m in batch_metrics]
     accuracy_scores = [m['accuracy'] for m in batch_metrics]
     
@@ -348,6 +359,7 @@ def detect_batch_drift(batch_metrics, threshold=0.05):
     return False, "No significant drift detected"
 
 def monitor_single_model(model_name, model_version):
+    """Monitor a single model's performance and detect drift"""
     model, model_uri = load_model_from_registry(model_name, model_version)
     if model is None:
         logger.error(f"Failed to load model {model_name}")
@@ -416,6 +428,7 @@ def monitor_single_model(model_name, model_version):
         return True
 
 def monitor_all_models():
+    """Monitor all models defined in MODELS_TO_MONITOR"""
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     
     summary = {
@@ -454,6 +467,7 @@ def monitor_all_models():
     return summary
 
 def save_monitoring_summary(results, output_path="monitoring/summary"):
+    """Save monitoring results summary to JSON file"""
     os.makedirs(output_path, exist_ok=True)
     
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")

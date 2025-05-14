@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 def load_preprocessing_pipeline():
-    """Load preprocessing pipeline for input data transformation"""
+    """load preprocessing pipeline for input data transformation """
     pipeline_path = os.path.join("data", "processed", "preprocessing_pipeline.pkl")
     
     if os.path.exists(pipeline_path):

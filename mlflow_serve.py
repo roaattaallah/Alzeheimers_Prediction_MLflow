@@ -24,7 +24,7 @@ def start_model_server(model_name, model_version, port):
         
         # Start model server in background
         log_file = f"mlflow_model_{model_name}_{port}.log"
-        cmd = f"nohup mlflow models serve -m models:/{model_name}/{model_version} -p {port} --host 0.0.0.0 --no-conda > {log_file} 2>&1 &"
+        cmd = f"nohup mlflow models serve -m models:/{model_name}/{model_version} -p {port} --host 0.0.0.0 --env-manager=local > {log_file} 2>&1 &"
         
         print(f"Starting model {model_name} (v{model_version}) on port {port}...")
         

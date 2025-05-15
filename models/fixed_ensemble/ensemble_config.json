@@ -1,0 +1,11 @@
+{
+  "model_type": "fixed_ensemble",
+  "model_weights": {
+    "xgboost": 0.3,
+    "rf": 0.3,
+    "logistic": 0.15,
+    "nn": 0.15,
+    "svm": 0.1
+  },
+  "description": "Fixed ensemble model with proper column handling"
+}

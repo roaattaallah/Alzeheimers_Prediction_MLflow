@@ -1,0 +1,50 @@
+{
+  "alzheimers_rf_tuned": {
+    "alzheimers_rf_tuned": 0.0,
+    "alzheimers_xgboost_tuned": 0.0564548765681957,
+    "alzheimers_logistic_tuned": 0.5567271193589226,
+    "alzheimers_knn_tuned": 0.2807937102208944,
+    "alzheimers_svm_tuned": 1.0,
+    "alzheimers_nn_tuned": 0.3341953451362675
+  },
+  "alzheimers_xgboost_tuned": {
+    "alzheimers_rf_tuned": 0.0564548765681957,
+    "alzheimers_xgboost_tuned": 0.0,
+    "alzheimers_logistic_tuned": 0.7890049336836041,
+    "alzheimers_knn_tuned": 0.4327686859986619,
+    "alzheimers_svm_tuned": 1.0,
+    "alzheimers_nn_tuned": 0.4457314614566935
+  },
+  "alzheimers_logistic_tuned": {
+    "alzheimers_rf_tuned": 0.5567271193589226,
+    "alzheimers_xgboost_tuned": 0.7890049336836041,
+    "alzheimers_logistic_tuned": 0.0,
+    "alzheimers_knn_tuned": 0.4856835851084018,
+    "alzheimers_svm_tuned": 1.0,
+    "alzheimers_nn_tuned": 0.013656820650770785
+  },
+  "alzheimers_knn_tuned": {
+    "alzheimers_rf_tuned": 0.2807937102208944,
+    "alzheimers_xgboost_tuned": 0.4327686859986619,
+    "alzheimers_logistic_tuned": 0.4856835851084018,
+    "alzheimers_knn_tuned": 0.0,
+    "alzheimers_svm_tuned": 1.0,
+    "alzheimers_nn_tuned": 0.3442406157810879
+  },
+  "alzheimers_svm_tuned": {
+    "alzheimers_rf_tuned": 1.0,
+    "alzheimers_xgboost_tuned": 1.0,
+    "alzheimers_logistic_tuned": 1.0,
+    "alzheimers_knn_tuned": 1.0,
+    "alzheimers_svm_tuned": 0.0,
+    "alzheimers_nn_tuned": 1.0
+  },
+  "alzheimers_nn_tuned": {
+    "alzheimers_rf_tuned": 0.3341953451362675,
+    "alzheimers_xgboost_tuned": 0.4457314614566935,
+    "alzheimers_logistic_tuned": 0.013656820650770785,
+    "alzheimers_knn_tuned": 0.3442406157810879,
+    "alzheimers_svm_tuned": 1.0,
+    "alzheimers_nn_tuned": 0.0
+  }
+}

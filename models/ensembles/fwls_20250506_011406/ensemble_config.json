@@ -1,0 +1,29 @@
+{
+  "model_names": [
+    "alzheimers_rf_tuned",
+    "alzheimers_xgboost_tuned",
+    "alzheimers_logistic_tuned",
+    "alzheimers_knn_tuned",
+    "alzheimers_svm_tuned",
+    "alzheimers_nn_tuned"
+  ],
+  "model_uris": {
+    "alzheimers_rf_tuned": "models:/alzheimers_rf_tuned/9",
+    "alzheimers_xgboost_tuned": "models:/alzheimers_xgboost_tuned/9",
+    "alzheimers_logistic_tuned": "models:/alzheimers_logistic_tuned/16",
+    "alzheimers_knn_tuned": "models:/alzheimers_knn_tuned/9",
+    "alzheimers_svm_tuned": "models:/alzheimers_svm_tuned/10",
+    "alzheimers_nn_tuned": "models:/alzheimers_nn_tuned/13"
+  },
+  "model_weights": {
+    "alzheimers_rf_tuned": 0.11423229075261028,
+    "alzheimers_xgboost_tuned": 0.4383816704128179,
+    "alzheimers_logistic_tuned": 0.17917870021312657,
+    "alzheimers_knn_tuned": 0.13585727430035432,
+    "alzheimers_svm_tuned": 0.1069144824746479,
+    "alzheimers_nn_tuned": 0.025435581846443067
+  },
+  "optimization_method": "FWLS",
+  "created_at": "20250506_011436",
+  "optimal_threshold": 0.5077632959026922
+}

@@ -1,0 +1,21 @@
+artifact_path: nn_best_model
+flavors:
+  python_function:
+    data: data
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.tensorflow
+    python_version: 3.9.19
+  tensorflow:
+    code: null
+    data: data
+    keras_version: 2.16.2
+    model_type: keras
+    save_format: tf
+mlflow_version: 2.21.3
+model_size_bytes: 490863
+model_uuid: f77c0920404541758dc1feef56c24799
+prompts: null
+run_id: a084c61a1cac4a1f966bffe333ded2d9
+utc_time_created: '2025-04-27 16:16:56.987910'

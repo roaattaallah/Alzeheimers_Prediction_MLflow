@@ -1,0 +1,27 @@
+{
+  "selected_models": [
+    {
+      "name": "alzheimers_rf_tuned",
+      "uri": "models:/alzheimers_rf_tuned/9",
+      "weight": 0.21155682903533904
+    },
+    {
+      "name": "alzheimers_logistic_tuned",
+      "uri": "models:/alzheimers_logistic_tuned/16",
+      "weight": 0.29656160458452724
+    },
+    {
+      "name": "alzheimers_knn_tuned",
+      "uri": "models:/alzheimers_knn_tuned/9",
+      "weight": 0.24785100286532946
+    },
+    {
+      "name": "alzheimers_svm_tuned",
+      "uri": "models:/alzheimers_svm_tuned/10",
+      "weight": 0.24403056351480423
+    }
+  ],
+  "diversity_metric": "disagreement",
+  "weighting_method": "diversity",
+  "created_at": "20250506_000605"
+}

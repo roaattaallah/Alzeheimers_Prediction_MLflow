@@ -1,0 +1,56 @@
+artifact_path: logistic_best_model
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.pkl
+    predict_fn: predict
+    python_version: 3.9.19
+  sklearn:
+    code: null
+    pickled_model: model.pkl
+    serialization_format: cloudpickle
+    sklearn_version: 1.6.1
+is_signature_from_type_hint: false
+mlflow_version: 2.21.3
+model_size_bytes: 7113
+model_uuid: 64ada91f77a44a22a93f82374ade7ba0
+prompts: null
+run_id: 717bb7c953ac4301bed31d31ca1177d5
+saved_input_example_info:
+  artifact_path: input_example.json
+  pandas_orient: split
+  serving_input_path: serving_input_example.json
+  type: dataframe
+signature:
+  inputs: '[{"type": "double", "name": "Age", "required": true}, {"type": "double",
+    "name": "Gender", "required": true}, {"type": "double", "name": "Ethnicity", "required":
+    true}, {"type": "double", "name": "EducationLevel", "required": true}, {"type":
+    "double", "name": "BMI", "required": true}, {"type": "double", "name": "Smoking",
+    "required": true}, {"type": "double", "name": "AlcoholConsumption", "required":
+    true}, {"type": "double", "name": "PhysicalActivity", "required": true}, {"type":
+    "double", "name": "DietQuality", "required": true}, {"type": "double", "name":
+    "SleepQuality", "required": true}, {"type": "double", "name": "FamilyHistoryAlzheimers",
+    "required": true}, {"type": "double", "name": "CardiovascularDisease", "required":
+    true}, {"type": "double", "name": "Diabetes", "required": true}, {"type": "double",
+    "name": "Depression", "required": true}, {"type": "double", "name": "HeadInjury",
+    "required": true}, {"type": "double", "name": "Hypertension", "required": true},
+    {"type": "double", "name": "SystolicBP", "required": true}, {"type": "double",
+    "name": "DiastolicBP", "required": true}, {"type": "double", "name": "CholesterolTotal",
+    "required": true}, {"type": "double", "name": "CholesterolLDL", "required": true},
+    {"type": "double", "name": "CholesterolHDL", "required": true}, {"type": "double",
+    "name": "CholesterolTriglycerides", "required": true}, {"type": "double", "name":
+    "MMSE", "required": true}, {"type": "double", "name": "FunctionalAssessment",
+    "required": true}, {"type": "double", "name": "MemoryComplaints", "required":
+    true}, {"type": "double", "name": "BehavioralProblems", "required": true}, {"type":
+    "double", "name": "ADL", "required": true}, {"type": "double", "name": "Confusion",
+    "required": true}, {"type": "double", "name": "Disorientation", "required": true},
+    {"type": "double", "name": "PersonalityChanges", "required": true}, {"type": "double",
+    "name": "DifficultyCompletingTasks", "required": true}, {"type": "double", "name":
+    "Forgetfulness", "required": true}]'
+  outputs: '[{"type": "double", "required": true}]'
+  params: null
+type_hint_from_example: false
+utc_time_created: '2025-04-28 07:15:54.238816'

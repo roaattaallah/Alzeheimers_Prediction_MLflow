@@ -1,0 +1,29 @@
+channels:
+- conda-forge
+dependencies:
+- python=3.12.4
+- pip<=25.1
+- pip:
+  - mlflow==2.22.0
+  - alembic==1.15.2
+  - attrs==25.3.0
+  - cffi==1.17.1
+  - cloudpickle==3.1.1
+  - colorama==0.4.6
+  - dill==0.3.9
+  - googleapis-common-protos==1.70.0
+  - huggingface-hub==0.30.2
+  - ipython==8.28.0
+  - jaraco-collections==5.1.0
+  - matplotlib==3.10.1
+  - numpy==1.26.4
+  - opencv-python==4.11.0.86
+  - pandas==2.2.3
+  - psutil==6.1.0
+  - scikit-learn==1.6.1
+  - scipy==1.15.2
+  - sqlalchemy==2.0.40
+  - tensorflow==2.16.2
+  - uuid==1.30
+  - xgboost==3.0.0
+name: mlflow-env

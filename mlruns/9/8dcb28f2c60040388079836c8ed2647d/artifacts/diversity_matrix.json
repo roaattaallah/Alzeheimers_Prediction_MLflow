@@ -1,0 +1,50 @@
+{
+  "alzheimers_rf_tuned": {
+    "alzheimers_rf_tuned": 0.0,
+    "alzheimers_xgboost_tuned": 0.378,
+    "alzheimers_logistic_tuned": 0.412,
+    "alzheimers_knn_tuned": 0.298,
+    "alzheimers_svm_tuned": 0.176,
+    "alzheimers_nn_tuned": 0.262
+  },
+  "alzheimers_xgboost_tuned": {
+    "alzheimers_rf_tuned": 0.378,
+    "alzheimers_xgboost_tuned": 0.0,
+    "alzheimers_logistic_tuned": 0.45,
+    "alzheimers_knn_tuned": 0.368,
+    "alzheimers_svm_tuned": 0.542,
+    "alzheimers_nn_tuned": 0.396
+  },
+  "alzheimers_logistic_tuned": {
+    "alzheimers_rf_tuned": 0.412,
+    "alzheimers_xgboost_tuned": 0.45,
+    "alzheimers_logistic_tuned": 0.0,
+    "alzheimers_knn_tuned": 0.362,
+    "alzheimers_svm_tuned": 0.468,
+    "alzheimers_nn_tuned": 0.182
+  },
+  "alzheimers_knn_tuned": {
+    "alzheimers_rf_tuned": 0.298,
+    "alzheimers_xgboost_tuned": 0.368,
+    "alzheimers_logistic_tuned": 0.362,
+    "alzheimers_knn_tuned": 0.0,
+    "alzheimers_svm_tuned": 0.378,
+    "alzheimers_nn_tuned": 0.296
+  },
+  "alzheimers_svm_tuned": {
+    "alzheimers_rf_tuned": 0.176,
+    "alzheimers_xgboost_tuned": 0.542,
+    "alzheimers_logistic_tuned": 0.468,
+    "alzheimers_knn_tuned": 0.378,
+    "alzheimers_svm_tuned": 0.0,
+    "alzheimers_nn_tuned": 0.298
+  },
+  "alzheimers_nn_tuned": {
+    "alzheimers_rf_tuned": 0.262,
+    "alzheimers_xgboost_tuned": 0.396,
+    "alzheimers_logistic_tuned": 0.182,
+    "alzheimers_knn_tuned": 0.296,
+    "alzheimers_svm_tuned": 0.298,
+    "alzheimers_nn_tuned": 0.0
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "model_type": "logistic",
+  "hyperparameters": {
+    "C": 0.01,
+    "l1_ratio": 0.0
+  },
+  "timestamp": "2025-04-27 19:40:03"
+}

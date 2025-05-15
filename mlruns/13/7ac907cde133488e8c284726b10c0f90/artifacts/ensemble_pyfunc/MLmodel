@@ -1,0 +1,22 @@
+artifact_path: ensemble_pyfunc
+flavors:
+  python_function:
+    artifacts:
+      ensemble_config:
+        path: artifacts/ensemble_config.json
+        uri: models/ensembles/high_acc_20250506_131140/ensemble_config.json
+    cloudpickle_version: 3.1.1
+    code: code
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.pyfunc.model
+    python_model: python_model.pkl
+    python_version: 3.12.4
+    streamable: false
+mlflow_version: 2.22.0
+model_size_bytes: 15924318
+model_uuid: 0ecd6d05d06d462abf00826d43913b1f
+prompts: null
+run_id: 7ac907cde133488e8c284726b10c0f90
+utc_time_created: '2025-05-06 10:12:44.383002'

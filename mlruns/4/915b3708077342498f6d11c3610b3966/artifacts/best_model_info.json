@@ -1,0 +1,10 @@
+{
+  "model_type": "xgboost",
+  "hyperparameters": {
+    "learning_rate": 0.005,
+    "max_depth": 10,
+    "n_estimators": 200,
+    "subsample": 0.8
+  },
+  "timestamp": "2025-05-12 10:24:22"
+}

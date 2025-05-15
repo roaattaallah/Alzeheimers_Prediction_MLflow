@@ -31,7 +31,12 @@ def start_model_server(model_name, model_version, port):
         process = subprocess.run(cmd, shell=True)
         
         # Wait for server to start, neural networks and ensembles need more time
-        max_attempts = 10 if "nn_tuned" in model_name or "ensemble" in model_name else 5
+        max_attempts = 10
+        if "nn_tuned" in model_name or "ensemble" in model_name:
+            max_attempts = 15
+        elif "xgboost" in model_name:
+            max_attempts = 12
+            
         for i in range(max_attempts):
             time.sleep(3 * (i + 1))
             

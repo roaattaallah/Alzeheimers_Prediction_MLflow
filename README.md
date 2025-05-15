@@ -42,6 +42,7 @@ MLFlow_Project/
 
 
 ```
+Note: During the development of this project python of version 3.9 was used.To face minimal dependency issues it is recommended to use a python version of 3.9
 
 This project uses MLflow to register and track different experiments.
 
@@ -80,21 +81,28 @@ This script will:
 - Save processed data to `data/processed/`
 - Create initial reports in `reports/figures/preprocessing/`
 
-### 3. Model Training and Comparison
-Run the model comparison script to train and evaluate different models:
+### 2. Model Training
+
+For training the following command can be run
 
 ```bash
-python compare_models.py
+python train.py --model_type [model_type]
 ```
+
+Available model types:
+- logistic
+- rf (Random Forest)
+- knn
+- svm
+- xgboost
+- nn (Neural Network)
 
 This will:
 - Train base models (Logistic Regression, Random Forest, KNN, SVM, XGBoost, Neural Network)
-- Perform hyperparameter tuning for each model
-- Generate comparison visualizations
-- Save the best model
+- Generate a confusion matrix 
 - Log results to MLflow
 
-### 4. Hyperparameter Tuning
+### 3. Hyperparameter Tuning
 For detailed hyperparameter tuning of specific models:
 
 ```bash
@@ -109,14 +117,25 @@ Available model types:
 - xgboost
 - nn (Neural Network)
 
-### 5. Model Training with Best Parameters
-Train models using the best parameters found during tuning:
+## 4. Compairing script 
+
+in order to train all available models and hypertune them all at one run run the following script:
+
 
 ```bash
-python train.py --model_type [model_type] --use_best_params True
+python compare_models.py
 ```
 
-### 6. Create High-Accuracy Ensemble
+This will:
+- Train base models (Logistic Regression, Random Forest, KNN, SVM, XGBoost, Neural Network)
+- Perform hyperparameter tuning for each model
+- Generate comparison visualizations
+- Generate a confusion matrix 
+- Log results to MLflow
+
+
+
+### 5. Create High-Accuracy Ensemble
 Create an ensemble of the best-performing models:
 
 ```bash
@@ -129,8 +148,10 @@ This will:
 - Optimize ensemble thresholds
 - Register the ensemble in MLflow
 
-### 7. Model Serving
+### 6. Model Serving
 Start the model servers:
+
+Note: Run the serving script with python of version 3.9 to avoid dependency issues since the models registered were built using 3.9 versioned python. 
 
 ```bash
 python mlflow_serve.py --action start
@@ -139,7 +160,7 @@ python mlflow_serve.py --action start
 Available actions:
 - start: Start all model servers in different ports
 
-### 8. Model Monitoring
+### 7. Model Monitoring
 Monitor model performance in production:
 
 ```bash
